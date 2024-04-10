@@ -34,7 +34,7 @@ Size of a hologram pixel in millimeters.
 #### FoV
 Field of view of a holographic pixel.
 
-#### NumThread
+#### NumThreads
 Number of threads to use for calculating the intensity image.
 
 #### PointCloud
