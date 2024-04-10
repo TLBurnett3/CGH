@@ -6,7 +6,7 @@
 
 cmake_minimum_required (VERSION 3.6)
 
-project(Core)
+project(cghCore)
 
 include_directories(${CMAKE_INCLUDE_PATH})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -24,6 +24,6 @@ set(SOURCE
 
 add_library(${PROJECT_NAME} SHARED ${HEADERS} ${SOURCE})
 
-target_link_libraries(${PROJECT_NAME} Common)
+target_link_libraries(${PROJECT_NAME} cghCommon)
 
 install (TARGETS ${PROJECT_NAME})

@@ -32,7 +32,7 @@ add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCE})
 
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS})
 target_link_libraries(${PROJECT_NAME} ${PCL_LIBRARIES})
-target_link_libraries(${PROJECT_NAME} Common)
-target_link_libraries(${PROJECT_NAME} Core)
+target_link_libraries(${PROJECT_NAME} cghCommon)
+target_link_libraries(${PROJECT_NAME} cghCore)
 
 install (TARGETS ${PROJECT_NAME})

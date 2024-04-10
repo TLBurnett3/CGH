@@ -7,7 +7,7 @@ set (CMAKE_VERBOSE_MAKEFILE 1)
 ##############################################################################################
 # Variables
 
-set (CGH_VERSION_MAJOR      0)
+set (CGH_VERSION_MAJOR      1)
 set (CGH_VERSION_MINOR      0)
 set (CGH_VERSION_PATCH      2)
 
@@ -173,9 +173,9 @@ set (3RDPARTY_INSTALL_FILES_DEBUG
     "C:/Program Files/OpenNI2/Redist/OpenNI2.dll"
 )
 
-install (FILES       ${3RDPARTY_INSTALL_FILES_RELEASE}   CONFIGURATIONS Release  DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-install (FILES       ${CGH_COMMAND_FILES}                CONFIGURATIONS Release  DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
-install (DIRECTORY   ${CGH_CFG_DIR}                      CONFIGURATIONS Release  DESTINATION ${CMAKE_INSTALL_PREFIX})
+install (FILES       ${3RDPARTY_INSTALL_FILES_RELEASE}   CONFIGURATIONS Release  DESTINATION bin)
+install (FILES       ${CGH_COMMAND_FILES}                CONFIGURATIONS Release  DESTINATION bin)
+install (DIRECTORY   ${CGH_CFG_DIR}                      CONFIGURATIONS Release  DESTINATION bin/..)
 
 endif()
 
