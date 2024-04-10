@@ -7,7 +7,7 @@ Demonstration of CGH interference pattern/intensity image rendering from a point
 * Src/CGH - Contains the main and executor for this project
 
 ## Build using CMake
-Building this project is a two-step process.  First, [3rdPartyLib](https://github.com/TLBurnett3/3rdPartyLibs) are required to be built and installed on the development/build platform.  Second, using CMake a platform specific make solution must be built and executed to create a build solution.  Currently, only Windows has been tested.
+Building this project is a two-step process.  First, [3rdPartyLib](https://github.com/TLBurnett3/3rdPartyLibs) is required to be built and installed on the development/build platform.  Second, using CMake a platform specific make solution must be built and executed to create a build solution.  Currently, only Windows has been tested.
 
 ## Running CGH
 The CGH executable requires a JSon file for defining the execution parameters.  An example is included within the Cfg directory.
@@ -26,13 +26,13 @@ Name of the Job.
 Output directory.
 
 #### Dim
-Dimensions of the hologram image in millimeters
+Dimensions of the hologram image in millimeters defined on an X,Y plane.
 
 #### PixelSize
-Size of a hologram pixel in millimeters
+Size of a hologram pixel in millimeters.
 
 #### FoV
-Field of view of a holographic pixel
+Field of view of a holographic pixel.
 
 #### NumThread
 Number of threads to use for calculating the intensity image.
@@ -40,8 +40,11 @@ Number of threads to use for calculating the intensity image.
 #### PointCloud
 The pointcloud .pcd file.
 
+#### WaveLengths
+The RGB wavelengths for wavefield calculation.
+
 #### WaveField
-Generate the wave field for each holographic pixel row.
+Generate the RGBW wavefield for each holographic pixel row.
 
 #### PCTransform
 A transform matrix applied to the point cloud.

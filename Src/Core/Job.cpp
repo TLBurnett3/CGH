@@ -61,11 +61,11 @@ int rc = 0;
 
   rc |= Common::JSon::parseTransform(doc,"PCTransform",_mTpc, false);
 
+  rc |= Common::JSon::parse(doc,"WaveLengths", _waveLengths, false);
+
   _waveLengths.w = (_waveLengths.r * _luminance.r) +
                    (_waveLengths.g * _luminance.g) +
                    (_waveLengths.b * _luminance.b);
-
-  rc |= Common::JSon::parse(doc,"WaveLengths", _waveLengths, false);
 
   _numPixels = glm::ivec2(glm::dvec2(_dim) / _pixelSize);
 

@@ -6,6 +6,7 @@
   "FoV": 30.0,
   "NumThreads": 4,
   "PointCloud": "bunny.pcd",
+  "WaveLengths": [700.0, 546.1, 435.8],
   "WaveField": true,
   "PCTransform": {
     "Translate": [ 0.0, 0.0, 15.0 ],
