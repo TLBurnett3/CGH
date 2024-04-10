@@ -1,0 +1,15 @@
+{
+  "JobName": "Test1",
+  "OutPath": "/tmp/Test1",
+  "Dim": [ 4, 4 ],
+  "PixelSize": [ 0.00025, 0.00025 ],
+  "FoV": 30.0,
+  "NumThreads": 4,
+  "PointCloud": "bunny.pcd",
+  "WaveField": false,
+  "SWave": false,
+  "PCTransform": {
+    "Translate": [ 0.0, 0.0, 15.0 ],
+    "Scale": [ 100.0, 100.0, 100.0 ]
+  }
+}
