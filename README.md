@@ -14,7 +14,7 @@ The CGH executable requires a JSon file for defining the execution parameters.  
 
 For Example: CGH ./Cfg/Bunny/Bunny.json
 
-During execution, CGH generates a ProofImage.png and the QStat.png.  The QStat.png is a row record of rendered rows.  If CGH is interrupt, the QStat.png informs CGH where to start rendering again.  It must be deleted to re-render a full dataset.
+During execution, CGH generates a ProofImage.png and the QStat.png.  The QStat.png is a row record of rendered rows.  If CGH is interrupted, the QStat.png informs CGH where to start rendering again.  It must be deleted to re-render a full dataset.
 When the WaveField parameter is on, the pixel wavefront is recorded by row into the "OutPath/WaveField" directory.  See below.
 
 ### JSon File Description
