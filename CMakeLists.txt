@@ -43,7 +43,16 @@ set(CMAKE_DEBUG_POSTFIX                     d)
 set(CMAKE_INSTALL_PREFIX                    /TLB3)
 
 if (UNIX)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+  set(CMAKE_CXX_FLAGS                       "${CMAKE_CXX_FLAGS} -pthread")
+  set(CMAKE_C_COMPILER                      /usr/bin/gcc-8 CACHE PATH "" FORCE)
+  set(CMAKE_CXX_COMPILER                    /usr/bin/g++-8 CACHE PATH "" FORCE)
+#  set(CMAKE_CXX_FLAGS                       "-fPIC")
+  set(CMAKE_CXX_FLAGS_DEBUG                 "-g")
+  set(CMAKE_CXX_FLAGS_RELEASE               "-O3")  
+  set(CMAKE_CXX_STANDARD_LIBRARIES          "-lstdc++fs -ldl -lpthread")
+
+  include_directories(/usr/local/include)
+  include_directories(/usr/include)
 endif()
 
 message("           CMAKE Variables")
