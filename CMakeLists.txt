@@ -1,6 +1,6 @@
-cmake_minimum_required (VERSION 3.17)
+cmake_minimum_required(VERSION 3.26)
 
-project (CGH VERSION 0.0.1)
+project (CGH VERSION 0.0.2)
 
 set (CMAKE_VERBOSE_MAKEFILE 1)
 
@@ -29,8 +29,6 @@ message("              3RDPARTY_BIN_DIR:    " ${3RDPARTY_BIN_DIR})
 										    
 set(CMAKE_INCLUDE_PATH                      ${3RDPARTY_INC_DIR})
 set(CMAKE_LIBRARY_PATH                      ${3RDPARTY_LIB_DIR})
-set(CMAKE_MODULE_PATH                       ${3RDPARTY_LIB_DIR}/CMake;${3RDPARTY_LIB_DIR}/cmake)
-set(CMAKE_PREFIX_PATH                       ${3RDPARTY_BASE_DIR})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY          ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY          ${CMAKE_BINARY_DIR}/lib)
@@ -42,6 +40,17 @@ set(CMAKE_DEBUG_POSTFIX                     d)
 
 set(CMAKE_INSTALL_PREFIX                    /TLB3)
 
+set (CMAKE_MODULE_PATH        ${3RDPARTY_BASE_DIR}
+                              ${3RDPARTY_BASE_DIR}/cmake
+                              ${3RDPARTY_BASE_DIR}/lib/cmake
+                              ${3RDPARTY_BASE_DIR}/x64/vc16/lib
+                              )
+
+set (CMAKE_PREFIX_PATH        ${3RDPARTY_BASE_DIR}
+                              ${3RDPARTY_BASE_DIR}/cmake
+                              ${3RDPARTY_BASE_DIR}/lib/cmake
+                              ${3RDPARTY_BASE_DIR}/x64/vc16/lib
+                              ) 
 if (UNIX)
   set(CMAKE_CXX_FLAGS                       "${CMAKE_CXX_FLAGS} -pthread")
   set(CMAKE_C_COMPILER                      /usr/bin/gcc-8 CACHE PATH "" FORCE)
@@ -55,6 +64,7 @@ if (UNIX)
   include_directories(/usr/include)
 endif()
 
+
 message("           CMAKE Variables")
 message("               CMAKE_BINARY_DIR:   " ${CMAKE_BINARY_DIR})
 message("              CMAKE_MODULE_PATH:   " ${CMAKE_MODULE_PATH})
@@ -65,8 +75,7 @@ message("           CMAKE_INSTALL_PREFIX:   " ${CMAKE_INSTALL_PREFIX})
 message(" CMAKE_RUNTIME_OUTPUT_DIRECTORY:   " ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
 message(" CMAKE_LIBRARY_OUTPUT_DIRECTORY:   " ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 message(" CMAKE_ARCHIVE_OUTPUT_DIRECTORY:   " ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
-message("           CMAKE_INSTALL_PREFIX:   " ${CMAKE_INSTALL_PREFIX})
-message("CPACK_PACKAGE_INSTALL_DIRECTORY:   " ${CPACK_PACKAGE_INSTALL_DIRECTORY})
+message("")
 
 message("")
 
@@ -78,20 +87,10 @@ message("             CGH_SRC_DIR:   " ${CGH_SRC_DIR})
 
 ##############################################################################################
 # Find Packages
-find_package(OpenCV		  REQUIRED)
-find_package(PCL		    REQUIRED)
+include(CMake/Config_OpenCV.txt)
+include(CMake/Config_PCL.txt)
 
 set(FLANN_ROOT    ${3RDPARTY_INC_DIR})
-
-message("")
-message("                OpenCV Variables")
-set(OpenCV_VERSION_S                      490)
-message("                 OpenCV_VERSION:   " ${OpenCV_VERSION})
-message("            OpenCV_INCLUDE_DIRS:   " ${OpenCV_INCLUDE_DIRS})
-message("                     OpenCV_DIR:   " ${OpenCV_DIR})
-message("                    OpenCV_LIBS:   " ${OpenCV_LIBS})
-message("                 OpenCV_LIB_DIR:   " ${OpenCV_LIB_DIR})
-message("")
 
 message("")
 message("                 Eigen Variables")
@@ -99,15 +98,6 @@ message("                    Eigen_DIR:   " ${EIGEN_DIR})
 message("                Eigen_VERSION:   " ${})
 message("           Eigen_INCLUDE_DIRS:   " ${EIGEN_INCLUDE_DIRS})
 message("           Eigen_LIBRARY_DIRS:   " ${EIGEN_LIBRARY_DIRS})
-
-message("")
-message("                 PCL Variables")
-message("                      PCL_DIR:   " ${PCL_DIR})
-message("                  PCL_VERSION:   " ${PCL_VERSION})
-message("             PCL_INCLUDE_DIRS:   " ${PCL_INCLUDE_DIRS})
-message("             PCL_LIBRARY_DIRS:   " ${PCL_LIBRARY_DIRS})
-message("                PCL_LIBRARIES:   " ${PCL_LIBRARIES})
-message("")
 
 ##############################################################################################
 
@@ -129,56 +119,10 @@ add_subdirectory(Src)
 
 if (WIN32)
 set (3RDPARTY_INSTALL_FILES_RELEASE 
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_core${OpenCV_VERSION_S}.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_highgui${OpenCV_VERSION_S}.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_imgproc${OpenCV_VERSION_S}.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_video${OpenCV_VERSION_S}.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_imgcodecs${OpenCV_VERSION_S}.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_video${OpenCV_VERSION_S}.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_videoio${OpenCV_VERSION_S}.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_videoio_ffmpeg${OpenCV_VERSION_S}_64.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_dnn${OpenCV_VERSION_S}.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_calib3d${OpenCV_VERSION_S}.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_features2d${OpenCV_VERSION_S}.dll    
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_flann${OpenCV_VERSION_S}.dll
-    ${3RDPARTY_BIN_DIR}/pcl_common.dll
-    ${3RDPARTY_BIN_DIR}/pcl_filters.dll
-    ${3RDPARTY_BIN_DIR}/pcl_features.dll
-    ${3RDPARTY_BIN_DIR}/pcl_io.dll
-    ${3RDPARTY_BIN_DIR}/pcl_segmentation.dll
-    ${3RDPARTY_BIN_DIR}/pcl_sample_consensus.dll
-    ${3RDPARTY_BIN_DIR}/pcl_search.dll
-    ${3RDPARTY_BIN_DIR}/pcl_kdtree.dll      
-    ${3RDPARTY_BIN_DIR}/pcl_octree.dll   
-    ${3RDPARTY_BIN_DIR}/pcl_ml.dll
-    ${3RDPARTY_BIN_DIR}/pcl_io_ply.dll
     "C:/Program Files/OpenNI2/Redist/OpenNI2.dll"
 )
 
 set (3RDPARTY_INSTALL_FILES_DEBUG
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_core${OpenCV_VERSION_S}d.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_highgui${OpenCV_VERSION_S}d.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_imgproc${OpenCV_VERSION_S}d.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_video${OpenCV_VERSION_S}d.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_imgcodecs${OpenCV_VERSION_S}d.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_video${OpenCV_VERSION_S}d.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_videoio${OpenCV_VERSION_S}d.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_videoio_ffmpeg${OpenCV_VERSION_S}_64.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_dnn${OpenCV_VERSION_S}d.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_calib3d${OpenCV_VERSION_S}d.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_features2d${OpenCV_VERSION_S}d.dll
-    ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_flann${OpenCV_VERSION_S}d.dll
-    ${3RDPARTY_BIN_DIR}/pcl_common.dll
-    ${3RDPARTY_BIN_DIR}/pcl_filters.dll
-    ${3RDPARTY_BIN_DIR}/pcl_features.dll
-    ${3RDPARTY_BIN_DIR}/pcl_io.dll
-    ${3RDPARTY_BIN_DIR}/pcl_segmentation.dll
-    ${3RDPARTY_BIN_DIR}/pcl_sample_consensus.dll
-    ${3RDPARTY_BIN_DIR}/pcl_search.dll
-    ${3RDPARTY_BIN_DIR}/pcl_kdtree.dll
-    ${3RDPARTY_BIN_DIR}/pcl_octree.dll   
-    ${3RDPARTY_BIN_DIR}/pcl_ml.dll
-    ${3RDPARTY_BIN_DIR}/pcl_io_ply.dll
     "C:/Program Files/OpenNI2/Redist/OpenNI2.dll"
 )
 
