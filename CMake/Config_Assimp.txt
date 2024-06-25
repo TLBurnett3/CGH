@@ -1,0 +1,17 @@
+message("Assimp Variables")
+
+set(ASSIMP_VERSION 140)
+
+if (WIN32)
+  set(ASSIMP_INCLUDE_DIR                          ${3RDPARTY_INC_DIR})
+  set(ASSIMP_LIBRARY                              ${3RDPARTY_LIB_DIR}/assimp-vc${ASSIMP_VERSION}-mt.lib)
+
+  message("           ASSIMP_INCLUDE_DIR:   "     ${ASSIMP_INCLUDE_DIR})
+  message("           ASSIMP_LIBRARY:       "     ${ASSIMP_LIBRARY})
+
+
+  install (FILES      ${3RDPARTY_BIN_DIR}/assimp-vc${ASSIMP_VERSION}-mt.dll      CONFIGURATIONS Debug   DESTINATION bin)
+  install (FILES      ${3RDPARTY_BIN_DIR}/assimp-vc${ASSIMP_VERSION}-mt.dll      CONFIGURATIONS Release DESTINATION bin)
+endif (WIN32)
+
+message("")

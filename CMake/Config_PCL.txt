@@ -1,0 +1,39 @@
+
+#find_package(PCL)
+
+if (WIN32)
+      
+  set (PCL_FILES
+    pcl_common
+    pcl_filters
+    pcl_features
+    pcl_io
+    pcl_segmentation
+    pcl_sample_consensus
+    pcl_search
+    pcl_kdtree
+    pcl_octree
+    pcl_ml
+    pcl_io_ply
+    )
+
+  foreach(str ${PCL_FILES})
+      list(APPEND PCL_RELEASE_DLL ${3RDPARTY_BIN_DIR}/${str}.dll)
+      list(APPEND PCL_DEBUG_DLL   ${3RDPARTY_BIN_DIR}/${str}.dll)
+
+      list(APPEND PCL_RELEASE_LIB optimized ${3RDPARTY_LIB_DIR}/${str}.lib)
+      list(APPEND PCL_DEBUG_LIB   debug     ${3RDPARTY_LIB_DIR}/${str}.lib)
+  endforeach()
+
+  install (FILES      ${PCL_DEBUG_DLL}        CONFIGURATIONS Debug   DESTINATION bin)
+  install (FILES      ${PCL_RELEASE_DLL}      CONFIGURATIONS Release DESTINATION bin)
+endif(WIN32)
+
+message("")
+message("                 PCL Variables")
+message("                      PCL_DIR:   " ${PCL_DIR})
+message("                  PCL_VERSION:   " ${PCL_VERSION})
+message("             PCL_INCLUDE_DIRS:   " ${PCL_INCLUDE_DIRS})
+message("             PCL_LIBRARY_DIRS:   " ${PCL_LIBRARY_DIRS})
+message("                PCL_LIBRARIES:   " ${PCL_LIBRARIES})
+message("")

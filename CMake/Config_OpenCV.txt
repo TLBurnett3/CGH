@@ -1,0 +1,47 @@
+
+set (OpenCV_DIR ${3RDPARTY_BASE_DIR}/x64/vc16/lib)
+
+#find_package(OpenCV)
+
+set(OpenCV_VERSION_S    490)
+
+message("")
+message("                OpenCV Variables")
+message("                 OpenCV_VERSION:   " ${OpenCV_VERSION})
+message("            OpenCV_INCLUDE_DIRS:   " ${OpenCV_INCLUDE_DIRS})
+message("                     OpenCV_DIR:   " ${OpenCV_DIR})
+message("                    OpenCV_LIBS:   " ${OpenCV_LIBS})
+message("                 OpenCV_LIB_DIR:   " ${OpenCV_LIB_DIR})
+message("")
+
+if (WIN32)
+      
+  set (OPENCV_FILES
+       opencv_core${OpenCV_VERSION_S}
+       opencv_highgui${OpenCV_VERSION_S}
+       opencv_imgproc${OpenCV_VERSION_S}
+       opencv_video${OpenCV_VERSION_S}
+       opencv_imgcodecs${OpenCV_VERSION_S}
+       opencv_videoio${OpenCV_VERSION_S}
+       opencv_calib3d${OpenCV_VERSION_S}
+       opencv_features2d${OpenCV_VERSION_S}    
+      )
+
+  foreach(str ${OPENCV_FILES})
+      list(APPEND OPENCV_RELEASE_DLL ${3RDPARTY_BASE_DIR}/x64/vc16/bin/${str}.dll)
+      list(APPEND OPENCV_DEBUG_DLL   ${3RDPARTY_BASE_DIR}/x64/vc16/bin/${str}d.dll)
+
+      list(APPEND OPENCV_RELEASE_LIB optimized ${3RDPARTY_BASE_DIR}/x64/vc16/lib/${str}.lib)
+      list(APPEND OPENCV_DEBUG_LIB   debug     ${3RDPARTY_BASE_DIR}/x64/vc16/lib/${str}d.lib)
+  endforeach()
+
+  list(APPEND OPENCV_RELEASE_DLL ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_videoio_ffmpeg${OpenCV_VERSION_S}_64.dll)
+  list(APPEND OPENCV_DEBUG_DLL   ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_videoio_ffmpeg${OpenCV_VERSION_S}_64.dll)
+
+  install (FILES      ${OPENCV_DEBUG_DLL}        CONFIGURATIONS Debug   DESTINATION bin)
+  install (FILES      ${OPENCV_RELEASE_DLL}      CONFIGURATIONS Release DESTINATION bin)
+
+#  file (COPY      ${OPENCV_DEBUG_DLL}          DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIR_DEBUG})
+#  file (COPY      ${OPENCV_RELEASE_DLL}        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIR_RELEASE})
+
+endif(WIN32)
