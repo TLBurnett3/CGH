@@ -111,8 +111,8 @@ char            *p = "Cfg/Default.json";
 
   if (rc == 0)
   {
-    bool               run = true;
-    CGH::Common::Timer tS;
+  bool               run = true;
+  CGH::Common::Timer tS;
 
     std::cout << "CGH: Execution\n";
 
@@ -133,7 +133,7 @@ char            *p = "Cfg/Default.json";
 
       if (_kbhit())
       {
-        char ch = _getch();
+      char ch = _getch();
 
         if ((ch == 'q') || (ch == 'Q'))    
           run = false;

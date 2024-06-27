@@ -28,15 +28,15 @@ if (WIN32)
       )
 
   foreach(str ${OPENCV_FILES})
-      list(APPEND OPENCV_RELEASE_DLL ${3RDPARTY_BASE_DIR}/x64/vc16/bin/${str}.dll)
-      list(APPEND OPENCV_DEBUG_DLL   ${3RDPARTY_BASE_DIR}/x64/vc16/bin/${str}d.dll)
+      list(APPEND OPENCV_RELEASE_DLL ${3RDPARTY_BASE_DIR}/bin/${str}.dll)
+      list(APPEND OPENCV_DEBUG_DLL   ${3RDPARTY_BASE_DIR}/bin/${str}d.dll)
 
-      list(APPEND OPENCV_RELEASE_LIB optimized ${3RDPARTY_BASE_DIR}/x64/vc16/lib/${str}.lib)
-      list(APPEND OPENCV_DEBUG_LIB   debug     ${3RDPARTY_BASE_DIR}/x64/vc16/lib/${str}d.lib)
+      list(APPEND OPENCV_RELEASE_LIB optimized ${3RDPARTY_BASE_DIR}/lib/${str}.lib)
+      list(APPEND OPENCV_DEBUG_LIB   debug     ${3RDPARTY_BASE_DIR}/lib/${str}d.lib)
   endforeach()
 
-  list(APPEND OPENCV_RELEASE_DLL ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_videoio_ffmpeg${OpenCV_VERSION_S}_64.dll)
-  list(APPEND OPENCV_DEBUG_DLL   ${3RDPARTY_BASE_DIR}/x64/vc16/bin/opencv_videoio_ffmpeg${OpenCV_VERSION_S}_64.dll)
+  list(APPEND OPENCV_RELEASE_DLL ${3RDPARTY_BASE_DIR}/bin/opencv_videoio_ffmpeg${OpenCV_VERSION_S}_64.dll)
+  list(APPEND OPENCV_DEBUG_DLL   ${3RDPARTY_BASE_DIR}/bin/opencv_videoio_ffmpeg${OpenCV_VERSION_S}_64.dll)
 
   install (FILES      ${OPENCV_DEBUG_DLL}        CONFIGURATIONS Debug   DESTINATION bin)
   install (FILES      ${OPENCV_RELEASE_DLL}      CONFIGURATIONS Release DESTINATION bin)

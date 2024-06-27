@@ -1,10 +1,10 @@
 {
   "JobName": "Test1",
-  "OutPath": "/tmp/Test1",
+  "OutPath": "./Tmp/Test1",
   "Dim": [ 4, 4 ],
   "PixelSize": [ 0.00025, 0.00025 ],
   "FoV": 30.0,
-  "NumThreads": 4,
+  "NumThreads": 16,
   "PointCloud": "bunny.pcd",
   "WaveLengths": [700.0, 546.1, 435.8],
   "WaveField": true,
