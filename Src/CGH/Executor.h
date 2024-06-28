@@ -33,7 +33,7 @@
 #include <thread>
 #include <condition_variable>
 #include <atomic>
-
+#include <filesystem>
 
 // 3rdPartyLibs
 #include <opencv2/highgui/highgui.hpp>
@@ -62,10 +62,8 @@ namespace CGH
 
     // Members
     private:
-    protected:
-       bool                       _debug;
-       
-       Core::Job                  _job;
+    protected:     
+       Core::SpJob                _spJob;
 
        std::mutex                 _tAccess;
        std::mutex                 _wAccess;
@@ -113,8 +111,8 @@ namespace CGH
     private:
     protected:
 
-      void createSWaveRow      (const uint32_t wId,const int row);
-      void writeSWaveRow       (const uint32_t wId,const int row);
+    //  void createSWaveRow      (const uint32_t wId,const int row);
+    //  void writeSWaveRow       (const uint32_t wId,const int row);
 
       void processWaveFrontRow (const uint32_t wId,const int row);
       void writeWaveFrontRow   (const uint32_t wId,const int row);
@@ -127,7 +125,7 @@ namespace CGH
       void worker(void);
 
       int  createJob(void);   
-      int  loadPointCloud(const char *fName);
+      int  loadPointCloud(const std::filesystem::path& filePath);
 
 
     public:
@@ -142,7 +140,7 @@ namespace CGH
 
       void exec(void);
   
-      int  init(const char *fName);
+      int  init(const std::filesystem::path &filePath,Core::SpJob &spJob);
 
       Executor(void);
       ~Executor();

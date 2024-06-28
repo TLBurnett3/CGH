@@ -1,6 +1,4 @@
 
-#find_package(PCL)
-
 if (WIN32)
       
   set (PCL_FILES
@@ -27,6 +25,8 @@ if (WIN32)
 
   install (FILES      ${PCL_DEBUG_DLL}        CONFIGURATIONS Debug   DESTINATION bin)
   install (FILES      ${PCL_RELEASE_DLL}      CONFIGURATIONS Release DESTINATION bin)
+else(WIN32)
+  find_package(PCL)
 endif(WIN32)
 
 message("")

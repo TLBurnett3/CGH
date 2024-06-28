@@ -29,9 +29,9 @@
 // Includes
 #include <string>
 #include <iostream>
+#include <filesystem>
 
 // 3rd Party Libs
-
 
 // CGH
 #include "CGH/Executor.h"
@@ -91,58 +91,82 @@ char _getch(void)
 #endif
 
 
-
-
 //---------------------------------------------------------------------
 // main
 //---------------------------------------------------------------------
 int main(int argc,char *argv[])
 {
-int             rc = 0;
-CGH::Executor   e;
-char            *p = "Cfg/Default.json";
+int               rc = -1;
+CGH::Core::SpJob  spJob;
+char              *pFName = "Cfg/Default.json";
 
   if (argc > 1)
-    p = argv[1];
+    pFName = argv[1];
     
   std::cout << "CGH: Initialization\n";
 
-  rc = e.init(p);
+  {
+  CGH::Common::JSon::Value doc;
+
+    rc = CGH::Common::JSon::readFile(doc,pFName);
+
+    if (rc == 0)
+    {
+      spJob = std::make_shared<CGH::Core::Job>();
+      rc = spJob->init(doc);
+    }
+  }
 
   if (rc == 0)
   {
-  bool               run = true;
-  CGH::Common::Timer tS;
+  CGH::Executor     *pE   = new CGH::Executor();
 
-    std::cout << "CGH: Execution\n";
-
-    e.start();
-
-    while (run && e.run())
+    if (pE)
     {
-      e.exec();
+    std::filesystem::path filePath = pFName;
 
+      filePath = filePath.remove_filename();
+
+      rc = pE->init(filePath,spJob);
+
+      if (rc == 0)
       {
-      int key = 0;
+      bool               run = true;
+      CGH::Common::Timer tS;
 
-        key = cv::waitKey((int)(1.0f / 30.f * 1000.0f));
-        
-        if ((key == 'Q') || (key == 'q'))
-          run = false;
+        std::cout << "CGH: Execution\n";
+
+        pE->start();
+
+        while (run && pE->run())
+        {
+          pE->exec();
+
+          {
+          int key = 0;
+
+            key = cv::waitKey((int)(1.0f / 30.f * 1000.0f));
+
+            if ((key == 'Q') || (key == 'q'))
+              run = false;
+          }
+
+          if (_kbhit())
+          {
+            char ch = _getch();
+
+            if ((ch == 'q') || (ch == 'Q'))
+              run = false;
+          }
+        }
+
+        pE->stop();
+        pE->printTable();
+        pE->updateProofImg();     
       }
 
-      if (_kbhit())
-      {
-      char ch = _getch();
-
-        if ((ch == 'q') || (ch == 'Q'))    
-          run = false;
-      }
+      delete pE;
     }
-
-    e.stop();
-    e.printTable();
-    e.updateProofImg();
   }
 
   std::cout << "CGH: Exit\n";
@@ -150,3 +174,45 @@ char            *p = "Cfg/Default.json";
   return rc;
 }
 
+
+/*
+rc = e.init(p);
+
+if (rc == 0)
+{
+  bool               run = true;
+  CGH::Common::Timer tS;
+
+  std::cout << "CGH: Execution\n";
+
+  e.start();
+
+  while (run && e.run())
+  {
+    e.exec();
+
+    {
+      int key = 0;
+
+      key = cv::waitKey((int)(1.0f / 30.f * 1000.0f));
+
+      if ((key == 'Q') || (key == 'q'))
+        run = false;
+    }
+
+    if (_kbhit())
+    {
+      char ch = _getch();
+
+      if ((ch == 'q') || (ch == 'Q'))
+        run = false;
+    }
+  }
+
+  e.stop();
+  e.printTable();
+  e.updateProofImg();
+}
+
+std::cout << "CGH: Exit\n";
+*/

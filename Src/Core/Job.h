@@ -30,6 +30,7 @@
 //---------------------------------------------------------------------
 // Includes
 // System
+#include <memory>
 #include <string>
 
 // 3rdPartyLibs
@@ -71,6 +72,8 @@ namespace CGH
 
         glm::mat4   _mTpc;
 
+        bool        _debug;
+        uint32_t    _numThreads;
 
       // Methods
       private:
@@ -81,6 +84,8 @@ namespace CGH
         EXPORT Job(void);
         EXPORT ~Job();
     };
+
+    typedef std::shared_ptr<Job>   SpJob;
   };
 };
 //---------------------------------------------------------------------

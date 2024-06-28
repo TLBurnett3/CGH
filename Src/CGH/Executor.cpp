@@ -29,7 +29,7 @@
 //---------------------------------------------------------------------
 // Includes
 // System
-#include <filesystem>
+
 #include <cmath>
 
 
@@ -53,7 +53,7 @@ using namespace CGH;
 //---------------------------------------------------------------------
 void Executor::printTable(void) 
 {
-int    rMin  = _job._numPixels.y;
+int    rMin  = _spJob->_numPixels.y;
 int    rMax  = 0;
 
   std::cout << std::endl;
@@ -73,8 +73,8 @@ int    rMax  = 0;
   }
 
   {
-  float c        = (float)rMin / (float)_job._numPixels.y * 100.0f;
-  int    remain  = _job._numPixels.y - rMin;
+  float c        = (float)rMin / (float)_spJob->_numPixels.y * 100.0f;
+  int    remain  = _spJob->_numPixels.y - rMin;
 
     std::cout << "Complete: %" << c  << "  ";
     std::cout << "Remaining: " << remain  << "  ";
@@ -123,7 +123,7 @@ double    dMax     = _proofMaxDbl;
   cv::imshow("ProofImg",_proofImg);
 
   {
-  std::filesystem::path fPath = _job._outPath;
+  std::filesystem::path fPath = _spJob->_outPath;
 
     fPath /= "ProofImg.png";
 
@@ -131,7 +131,7 @@ double    dMax     = _proofMaxDbl;
   }
 
   {
-  std::filesystem::path fPath = _job._outPath;
+  std::filesystem::path fPath = _spJob->_outPath;
   FILE *fp = 0;
 
     fPath /= "ProofImg.raw";
@@ -179,15 +179,15 @@ void Executor::exec(void)
 void Executor::processWaveFrontRow(const uint32_t wId,const int row)
 {
 glm::ivec2        hIdx(0,row);
-glm::dvec3        vS(_job._pixelSize.x,_job._pixelSize.y,1.0);
-glm::dvec3        vT(_job._numPixels.x >> 1,_job._numPixels.y >> 1,0.0);
+glm::dvec3        vS(_spJob->_pixelSize.x,_spJob->_pixelSize.y,1.0);
+glm::dvec3        vT(_spJob->_numPixels.x >> 1,_spJob->_numPixels.y >> 1,0.0);
 glm::dvec4        *pM = (glm::dvec4 *)_pMemLst[wId];
 pcl::PointXYZRGBA *pCld = &_pntCld[0];
 pcl::PointXYZRGBA *pEnd = pCld + _pntCld.size();
-glm::dvec4        k = glm::dvec4(2.0 * glm::pi<double>()) / _job._waveLengths;
-float             hA = glm::radians(_job._fov / 2.0);
+glm::dvec4        k = glm::dvec4(2.0 * glm::pi<double>()) / _spJob->_waveLengths;
+float             hA = glm::radians(_spJob->_fov / 2.0);
 
-  while ((_run) && (hIdx.x < _job._numPixels.x))
+  while ((_run) && (hIdx.x < _spJob->_numPixels.x))
   {
   glm::dvec3        vC(hIdx.x,hIdx.y,0);
   pcl::PointXYZRGBA *pS(pCld);
@@ -230,7 +230,7 @@ float             hA = glm::radians(_job._fov / 2.0);
 //---------------------------------------------------------------------
 void Executor::updateQStat(const uint32_t wId,const cv::Point &idx)
 {
-std::filesystem::path fPath = _job._outPath;
+std::filesystem::path fPath = _spJob->_outPath;
 
   fPath /= "QStat.png";
 
@@ -255,7 +255,7 @@ std::filesystem::path fPath = _job._outPath;
 //---------------------------------------------------------------------
 void Executor::writeWaveFrontRow(const uint32_t wId,const int row)
 {
-std::filesystem::path fPath = _job._outPath;
+std::filesystem::path fPath = _spJob->_outPath;
 
   fPath /= "WaveField";
   fPath /= "CGHRow_";
@@ -383,7 +383,7 @@ uint32_t    wId = 0;
         if ((row % _proofStp.y) == 0)
           proofRow(wId,row);
 
-        if (_job._isWaveField)
+        if (_spJob->_isWaveField)
           writeWaveFrontRow(wId,row);
 
         updateQStat(wId,idx);
@@ -401,7 +401,7 @@ uint32_t    wId = 0;
 int Executor::createJob(void)
 {
 int rc = 0;
-std::filesystem::path outPath   = _job._outPath;
+std::filesystem::path outPath   = _spJob->_outPath;
 std::filesystem::path wfOutPath = outPath;
 std::filesystem::path swOutPath = outPath;
 
@@ -411,21 +411,21 @@ std::filesystem::path swOutPath = outPath;
   if (!std::filesystem::exists(outPath))
     rc |= std::filesystem::create_directories(outPath) ? 0 : -1;
 
-  if (_job._isWaveField && !std::filesystem::exists(wfOutPath))
+  if (_spJob->_isWaveField && !std::filesystem::exists(wfOutPath))
     rc |= std::filesystem::create_directories(wfOutPath) ? 0 : -1;
 
   if (rc == 0)
   {
   std::filesystem::path fPath  = outPath;
-  glm::ivec2 qSDim(sqrt(_job._numPixels.x));
+  glm::ivec2 qSDim(sqrt(_spJob->_numPixels.x));
   bool loadProof = false;
 
     fPath  /= "QStat.png";
 
-    while ((qSDim.x * qSDim.y) != _job._numPixels.x)
+    while ((qSDim.x * qSDim.y) != _spJob->_numPixels.x)
     {
       qSDim.y--;
-      qSDim.x = _job._numPixels.x / qSDim.y;
+      qSDim.x = _spJob->_numPixels.x / qSDim.y;
     }
 
     if (!std::filesystem::exists(fPath))
@@ -465,9 +465,9 @@ std::filesystem::path swOutPath = outPath;
       }
     }
 
-    _proofSize = glm::min(_proofSize,_job._numPixels);
-    _proofStp  = _job._numPixels / _proofSize;
-    _proofSize = _job._numPixels / _proofStp;
+    _proofSize = glm::min(_proofSize,_spJob->_numPixels);
+    _proofStp  = _spJob->_numPixels / _proofSize;
+    _proofSize = _spJob->_numPixels / _proofStp;
 
     _proofImgDbl.create(_proofSize.y,_proofSize.x,CV_64FC1);
     _proofImgDbl.setTo(0);
@@ -495,7 +495,7 @@ std::filesystem::path swOutPath = outPath;
 
     if (loadProof)
     {
-    std::filesystem::path fPathR = _job._outPath;
+    std::filesystem::path fPathR = _spJob->_outPath;
 
       fPathR /= "ProofImg.raw";
 
@@ -545,15 +545,12 @@ std::filesystem::path swOutPath = outPath;
 //---------------------------------------------------------------------
 // loadPointCloud
 //---------------------------------------------------------------------
-int Executor::loadPointCloud(const char *fName)
+int Executor::loadPointCloud(const std::filesystem::path &filePath)
 {
 int rc = -1;
-std::filesystem::path filePath = fName;
+std::filesystem::path &pclFilePath = filePath / _spJob->_pntCld;
 
-  filePath = filePath.remove_filename();
-  filePath /= _job._pntCld;
-
-  if (pcl::io::loadPCDFile<pcl::PointXYZRGBA>(filePath.string(),_pntCld) == 0)
+  if (pcl::io::loadPCDFile<pcl::PointXYZRGBA>(pclFilePath.string(),_pntCld) == 0)
   {
   glm::vec3  vMin(FLT_MAX);
   glm::vec3  vMax(-FLT_MAX);
@@ -574,9 +571,9 @@ std::filesystem::path filePath = fName;
           _pntCld[i].a = 1.0f;
         else
         {
-          _pntCld[i].a = (_pntCld[i].r * _job._luminance.r) +
-                         (_pntCld[i].g * _job._luminance.g) +
-                         (_pntCld[i].b * _job._luminance.b);
+          _pntCld[i].a = (_pntCld[i].r * _spJob->_luminance.r) +
+                         (_pntCld[i].g * _spJob->_luminance.g) +
+                         (_pntCld[i].b * _spJob->_luminance.b);
         }
       }
     }
@@ -605,11 +602,11 @@ std::filesystem::path filePath = fName;
       std::cout << "Point Cloud Max   : [" << vMax.x << "," << vMax.y << "," << vMax.z << "]" << std::endl;
       std::cout << "Point Cloud Dim.  : [" << vDim.x << "," << vDim.y << "," << vDim.z << "]" << std::endl;
 
-      if (_job._mTpc != glm::mat4(1.0f))
+      if (_spJob->_mTpc != glm::mat4(1.0f))
       {
       glm::mat4 mT = glm::translate(glm::mat4(1),-vCen);
 
-        mT = _job._mTpc * mT; 
+        mT = _spJob->_mTpc * mT; 
 
         std::cout << "Transform PointCloud " << std::endl;
         for (size_t i = 0; i < _pntCld.size(); i++)
@@ -663,49 +660,41 @@ std::filesystem::path filePath = fName;
 //---------------------------------------------------------------------
 // init
 //---------------------------------------------------------------------
-int Executor::init(const char *fName)
+int Executor::init(const std::filesystem::path &filePath,Core::SpJob &spJob)
 {
 int rc = 0;
-Common::JSon::Value doc;
-uint32_t numThreads = 2;
 
-  rc = Common::JSon::readFile(doc,fName);
-
-  rc |= Common::JSon::parse(doc,"Debug",       _debug,       false);
-  rc |= Common::JSon::parse(doc,"NumThreads",  numThreads,   false);
-
-  if (rc == 0)
-    rc = _job.init(doc);
+  _spJob = spJob;
 
   if (rc == 0)
     rc = createJob();
 
   if (rc == 0)
-    rc = loadPointCloud(fName);
+    rc = loadPointCloud(filePath);
 
   if (rc == 0)
   {
-    _memSize = sizeof(glm::dvec4) * _job._numPixels.x;
+    _memSize = sizeof(glm::dvec4) * _spJob->_numPixels.x;
     _binMemSize = _memSize / 8;
 
     if ((_binMemSize * 8) != _memSize)
       _binMemSize++;
 
-    _timerLst.resize(numThreads);
+    _timerLst.resize(_spJob->_numThreads);
 
-    for (uint32_t i = 0;i < numThreads;i++)
+    for (uint32_t i = 0;i < _spJob->_numThreads;i++)
     {
       _workers.emplace_back(&Executor::worker,this);
       _procLst.emplace_back(-1);
     }
 
-    for (uint32_t i = 0;i < numThreads;i++)
+    for (uint32_t i = 0;i < _spJob->_numThreads;i++)
     {
       std::cout << "Allocating WaveFront Buffer [" << i << "]: " << _memSize << " bytes" << std::endl;
       _pMemLst.emplace_back(new uint8_t[_memSize]);
     }
 
-    for (uint32_t i = 0;i < numThreads;i++)
+    for (uint32_t i = 0;i < _spJob->_numThreads;i++)
     {
       std::cout << "Allocating Bin Buffers [" << i << "]: " << _binMemSize << " * 4 bytes" << std::endl;
       _pRBinMemLst.emplace_back(new uint8_t[_binMemSize]);
@@ -717,7 +706,6 @@ uint32_t numThreads = 2;
 
   return rc;
 }
-
 
 //---------------------------------------------------------------------
 // start
@@ -745,8 +733,8 @@ void Executor::stop(void)
 //---------------------------------------------------------------------
 // Executor
 //---------------------------------------------------------------------
-Executor::Executor(void) :  _debug(false),
-                            _job(),
+Executor::Executor(void) :  //_debug(false),
+                            _spJob(),
                             _tAccess(),
                             _wAccess(),
                             _run(true),

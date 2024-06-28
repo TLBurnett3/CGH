@@ -1,20 +1,8 @@
 
-set (OpenCV_DIR ${3RDPARTY_BASE_DIR}/x64/vc16/lib)
-
-#find_package(OpenCV)
-
 set(OpenCV_VERSION_S    490)
 
-message("")
-message("                OpenCV Variables")
-message("                 OpenCV_VERSION:   " ${OpenCV_VERSION})
-message("            OpenCV_INCLUDE_DIRS:   " ${OpenCV_INCLUDE_DIRS})
-message("                     OpenCV_DIR:   " ${OpenCV_DIR})
-message("                    OpenCV_LIBS:   " ${OpenCV_LIBS})
-message("                 OpenCV_LIB_DIR:   " ${OpenCV_LIB_DIR})
-message("")
-
 if (WIN32)
+  set (OpenCV_DIR ${3RDPARTY_BASE_DIR}/lib)
       
   set (OPENCV_FILES
        opencv_core${OpenCV_VERSION_S}
@@ -40,8 +28,15 @@ if (WIN32)
 
   install (FILES      ${OPENCV_DEBUG_DLL}        CONFIGURATIONS Debug   DESTINATION bin)
   install (FILES      ${OPENCV_RELEASE_DLL}      CONFIGURATIONS Release DESTINATION bin)
-
-#  file (COPY      ${OPENCV_DEBUG_DLL}          DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIR_DEBUG})
-#  file (COPY      ${OPENCV_RELEASE_DLL}        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIR_RELEASE})
-
+else (WIN32)
+    find_package(OpenCV)
 endif(WIN32)
+
+message("")
+message("                OpenCV Variables")
+message("                 OpenCV_VERSION:   " ${OpenCV_VERSION})
+message("            OpenCV_INCLUDE_DIRS:   " ${OpenCV_INCLUDE_DIRS})
+message("                     OpenCV_DIR:   " ${OpenCV_DIR})
+message("                    OpenCV_LIBS:   " ${OpenCV_LIBS})
+message("                 OpenCV_LIB_DIR:   " ${OpenCV_LIB_DIR})
+message("")

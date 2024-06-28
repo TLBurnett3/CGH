@@ -31,8 +31,8 @@ set(SOURCE
 
 add_executable(${PROJECT_NAME} ${HEADERS} ${SOURCE})
 
-target_link_libraries(${PROJECT_NAME} ${OPENCV_RELEASE_LIB})
-target_link_libraries(${PROJECT_NAME} ${PCL_RELEASE_LIB})
+target_link_libraries(${PROJECT_NAME} ${OPENCV_DEBUG_LIB} ${OPENCV_RELEASE_LIB})
+target_link_libraries(${PROJECT_NAME} ${PCL_DEBUG_LIB} ${PCL_RELEASE_LIB})
 target_link_libraries(${PROJECT_NAME} cghCommon)
 target_link_libraries(${PROJECT_NAME} cghCore)
 

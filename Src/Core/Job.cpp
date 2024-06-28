@@ -54,14 +54,17 @@ int rc = 0;
   rc |= Common::JSon::parse(doc,"FoV",          _fov,         true);
   rc |= Common::JSon::parse(doc,"PixelSize",    _pixelSize,   false);
   rc |= Common::JSon::parse(doc,"WaveField",    _isWaveField, false);
-   rc |= Common::JSon::parse(doc,"PixelSize",    _pixelSize,   false);
+  rc |= Common::JSon::parse(doc,"PixelSize",    _pixelSize,   false);
   rc |= Common::JSon::parse(doc,"PointCloud",   _pntCld,      true);
 
   rc |= Common::JSon::parse(doc,"Luminance",    _luminance,   false);
 
   rc |= Common::JSon::parseTransform(doc,"PCTransform",_mTpc, false);
 
-  rc |= Common::JSon::parse(doc,"WaveLengths", _waveLengths, false);
+  rc |= Common::JSon::parse(doc,"WaveLengths",  _waveLengths,  false);
+
+  rc |= Common::JSon::parse(doc,"Debug",        _debug,       false);
+  rc |= Common::JSon::parse(doc,"NumThreads",   _numThreads,  false);
 
   _waveLengths.w = (_waveLengths.r * _luminance.r) +
                    (_waveLengths.g * _luminance.g) +
@@ -76,7 +79,7 @@ int rc = 0;
   std::cout << "NumPixels: "    << "[" << _numPixels.x << "," << _numPixels.y << "]" << std::endl;
   std::cout << "FoV: "          << _fov     << std::endl;
   std::cout << "WaveField: "    << (_isWaveField ? "true" : "false")     << std::endl;
-   std::cout << "Point Cloud: "  << _pntCld     << std::endl;
+  std::cout << "Point Cloud: "  << _pntCld     << std::endl;
   std::cout << "Luminance: ["   << _luminance.r << "," << _luminance.g << "," << _luminance.b << "]" << std::endl;
   std::cout << "WaveLengths: [" << _waveLengths.r << "," << _waveLengths.g << "," 
                                 << _waveLengths.b << "," << _waveLengths.w << "]" << std::endl;
@@ -98,7 +101,9 @@ Job::Job(void) : _jobName(),
                  _isWaveField(false),
                  _waveLengths(700.0,546.1,435.8,0),
                  _luminance(0.2,0.7,0.1),
-                 _mTpc(1.0f)
+                 _mTpc(1.0f),
+                 _debug(false),
+                 _numThreads(2)
 {
 }
 
