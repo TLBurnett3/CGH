@@ -35,6 +35,7 @@
 
 // CGH
 #include "CGH/Executor.h"
+#include "CGH/ExecutorCpp.h"
 #include "Common/Timer.h"
 //---------------------------------------------------------------------
 
@@ -119,7 +120,7 @@ char              *pFName = "Cfg/Default.json";
 
   if (rc == 0)
   {
-  CGH::Executor     *pE   = new CGH::Executor();
+  CGH::Executor     *pE   = new CGH::ExecutorCpp();
 
     if (pE)
     {
@@ -161,7 +162,7 @@ char              *pFName = "Cfg/Default.json";
         }
 
         pE->stop();
-        pE->printTable();
+        pE->printStatus();
         pE->updateProofImg();     
       }
 
@@ -173,46 +174,3 @@ char              *pFName = "Cfg/Default.json";
 
   return rc;
 }
-
-
-/*
-rc = e.init(p);
-
-if (rc == 0)
-{
-  bool               run = true;
-  CGH::Common::Timer tS;
-
-  std::cout << "CGH: Execution\n";
-
-  e.start();
-
-  while (run && e.run())
-  {
-    e.exec();
-
-    {
-      int key = 0;
-
-      key = cv::waitKey((int)(1.0f / 30.f * 1000.0f));
-
-      if ((key == 'Q') || (key == 'q'))
-        run = false;
-    }
-
-    if (_kbhit())
-    {
-      char ch = _getch();
-
-      if ((ch == 'q') || (ch == 'Q'))
-        run = false;
-    }
-  }
-
-  e.stop();
-  e.printTable();
-  e.updateProofImg();
-}
-
-std::cout << "CGH: Exit\n";
-*/

@@ -22,7 +22,7 @@
 // SOFTWARE.
 //---------------------------------------------------------------------
 
-// Executor.h
+// ExecutorCpp.h
 // Thomas Burnett
 
 #pragma once
@@ -30,20 +30,13 @@
 //---------------------------------------------------------------------
 // Includes
 // System
-#include <thread>
-#include <condition_variable>
-#include <atomic>
-#include <filesystem>
+
 
 // 3rdPartyLibs
-#include <opencv2/highgui/highgui.hpp>
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
+
 
 // CGH
-#include "Common/JSon.h"
-#include "Core/Job.h"
-#include "Common/Timer.h"
+#include "Executor.h"
 //---------------------------------------------------------------------
 
 
@@ -51,64 +44,76 @@
 // Classes
 namespace CGH
 {
-  class Executor
+  class ExecutorCpp : public Executor
   {
     // Defines
     private:
     protected:
-      typedef pcl::PointCloud<pcl::PointXYZRGBA> PntCld;
       
     public:
 
     // Members
     private:
     protected:     
-       Core::SpJob                _spJob;
-       std::atomic<bool>          _run;
+       std::mutex                 _tAccess;
+       std::mutex                 _wAccess;
+       std::atomic<bool>          _dispatch;
+       std::condition_variable    _workerCondition;
+       std::condition_variable    _waitCondition;
+       std::vector<std::thread>   _workers;
 
-       PntCld                     _pntCld; 
-       std::vector<glm::dvec4>    _phaseLst;
+       std::vector<uint8_t *>     _pMemLst;
+       size_t                     _memSize;
 
-       cv::Mat                    _proofImgDbl;
-       cv::Mat                    _proofImg;
-       glm::ivec2                 _proofSize;
-       glm::ivec2                 _proofStp;
+       std::vector<uint8_t *>     _pRBinMemLst;
+       std::vector<uint8_t *>     _pGBinMemLst;
+       std::vector<uint8_t *>     _pBBinMemLst;
+       std::vector<uint8_t *>     _pABinMemLst;
+       size_t                     _binMemSize;
 
-       double                     _proofMinDbl;
-       double                     _proofMaxDbl;
-       bool                       _proofUpdate;
+       std::vector<Common::Timer> _timerLst;
+       std::vector<int>           _procLst;  
 
-       Common::Timer              _runTimer;
+       cv::Mat                    _qSImgAss;
+       cv::Mat                    _qSImgFin;
 
+       double                     _accTime;
+       int                        _numProcessed;
+
+       Common::Timer              _printTimer;
 
   public:   
 
     // Methods
     private:
- 
     protected:
-     inline double map(double x, double in_min, double in_max, double out_min, double out_max)
-      { return ((x - in_min) * (out_max - out_min)) / ((in_max - in_min) + out_min); }    
 
-      int  createDirectories(void);
-      int  loadPointCloud   (const std::filesystem::path& filePath);
 
+      void processWaveFrontRow (const uint32_t wId,const int row);
+      void writeWaveFrontRow   (const uint32_t wId,const int row);
+      void proofRow            (const uint32_t wId,const int row);
+
+      int  findWaveFrontRow    (cv::Point *pIdx);
+
+      void updateQStat(const uint32_t wId,const cv::Point &idx);
+
+      void worker(void);
+
+      int  readyQStat (bool &bLP);
+      int  loadProof  (void);
 
     public:
-      bool run(void)
-      { return _run; }      
-
-      virtual void printStatus(void)        = 0;
-      virtual void updateProofImg(void)     = 0;
+      virtual void printStatus(void);
+      virtual void updateProofImg(void);
 
       virtual void start(void);
-      virtual void exec(void)               = 0;
       virtual void stop(void);
+      virtual void exec(void);
   
       virtual int  init(const std::filesystem::path &filePath,Core::SpJob &spJob);
 
-      Executor(void);
-      virtual ~Executor();
+      ExecutorCpp(void);
+      virtual ~ExecutorCpp();
   };
 };
 //---------------------------------------------------------------------
