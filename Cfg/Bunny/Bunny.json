@@ -1,5 +1,6 @@
 {
   "JobName": "Test1",
+  "Renderer": "Cpp",
   "OutPath": "./Tmp/Test1",
   "Dim": [ 4, 4 ],
   "PixelSize": [ 0.00025, 0.00025 ],

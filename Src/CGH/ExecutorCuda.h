@@ -22,7 +22,7 @@
 // SOFTWARE.
 //---------------------------------------------------------------------
 
-// Job.h
+// ExecutorCuda.h
 // Thomas Burnett
 
 #pragma once
@@ -30,14 +30,13 @@
 //---------------------------------------------------------------------
 // Includes
 // System
-#include <memory>
-#include <string>
+
 
 // 3rdPartyLibs
-#include <glm/glm.hpp>
+
 
 // CGH
-#include "Common/JSon.h"
+#include "Executor.h"
 //---------------------------------------------------------------------
 
 
@@ -45,48 +44,36 @@
 // Classes
 namespace CGH
 {
-  namespace Core
+  class ExecutorCuda : public Executor
   {
-    class Job
-    {
-      // Defines
-      private:
-      protected:
-      public:
+    // Defines
+    private:
+    protected:
+      
+    public:
 
-      // Members
-      private:
-      protected:
-      public:   
-        std::string _renderer;
-        std::string _jobName;
-        std::string _outPath;
-        glm::ivec2  _dim;
-        float       _fov;
-        glm::dvec2  _pixelSize;
-        glm::ivec2  _numPixels;
-        std::string _pntCld;
-        bool        _isWaveField;
+    // Members
+    private:
+    protected:     
+    public:   
 
-        glm::dvec4  _waveLengths;
-        glm::dvec3  _luminance;
+    // Methods
+    private:
+    protected:
 
-        glm::mat4   _mTpc;
 
-        bool        _debug;
-        uint32_t    _numThreads;
+    public:
+      virtual void printStatus(void);
+      virtual void updateProofImg(void);
 
-      // Methods
-      private:
-      protected:
-      public:
-        EXPORT int init(Common::JSon::Value &doc);
+      virtual void start(void);
+      virtual void stop(void);
+      virtual void exec(void);
+  
+      virtual int  init(const std::filesystem::path &filePath,Core::SpJob &spJob);
 
-        EXPORT Job(void);
-        EXPORT ~Job();
-    };
-
-    typedef std::shared_ptr<Job>   SpJob;
+      ExecutorCuda(void);
+      virtual ~ExecutorCuda();
   };
 };
 //---------------------------------------------------------------------

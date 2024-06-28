@@ -29,9 +29,7 @@
 //---------------------------------------------------------------------
 // Includes
 // System
-
 #include <cmath>
-
 
 // 3rdPartyLibs
 #include <glm/glm.hpp>

@@ -23,12 +23,13 @@ endif()
 set(HEADERS
   Executor.h
   ExecutorCpp.h
-
+  ExecutorCuda.h
 )
 
 set(SOURCE
   Executor.cpp
   ExecutorCpp.cpp
+  ExecutorCuda.cpp
   Main.cpp
 )
 

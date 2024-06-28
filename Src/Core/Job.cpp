@@ -48,7 +48,8 @@ int Job::init(Common::JSon::Value &doc)
 {
 int rc = 0;
 
-  rc |= Common::JSon::parse(doc,"JobName",      _jobName,     true);
+  rc |= Common::JSon::parse(doc,"Renderer",     _renderer,    false);
+  rc |= Common::JSon::parse(doc,"JobName" ,     _jobName,     true);
   rc |= Common::JSon::parse(doc,"OutPath",      _outPath,     true);
   rc |= Common::JSon::parse(doc,"Dim",          _dim,         true);
   rc |= Common::JSon::parse(doc,"FoV",          _fov,         true);
@@ -66,6 +67,7 @@ int rc = 0;
   rc |= Common::JSon::parse(doc,"Debug",        _debug,       false);
   rc |= Common::JSon::parse(doc,"NumThreads",   _numThreads,  false);
 
+ 
   _waveLengths.w = (_waveLengths.r * _luminance.r) +
                    (_waveLengths.g * _luminance.g) +
                    (_waveLengths.b * _luminance.b);
@@ -73,6 +75,7 @@ int rc = 0;
   _numPixels = glm::ivec2(glm::dvec2(_dim) / _pixelSize);
 
   std::cout << "JobName: "      << _jobName << std::endl;
+  std::cout << "Renderer: "     << _renderer << std::endl;
   std::cout << "OutPath: "      << _outPath << std::endl;
   std::cout << "Dim: "          << "[" << _dim.x << "," << _dim.y << "]" << std::endl;
   std::cout << "PixelSize: "    << "[" << _pixelSize.x << "," << _pixelSize.y << "]" << std::endl;
@@ -84,6 +87,9 @@ int rc = 0;
   std::cout << "WaveLengths: [" << _waveLengths.r << "," << _waveLengths.g << "," 
                                 << _waveLengths.b << "," << _waveLengths.w << "]" << std::endl;
 
+  std::transform(_renderer.begin(), _renderer.end(), _renderer.begin(), [](unsigned char c)
+  { return std::tolower(c); });
+
   return rc;
 }
 
@@ -91,7 +97,8 @@ int rc = 0;
 //---------------------------------------------------------------------
 // Job
 //---------------------------------------------------------------------
-Job::Job(void) : _jobName(),
+Job::Job(void) : _renderer("cpp"),
+                 _jobName(),
                  _outPath(),
                  _dim(0),
                  _fov(),

@@ -36,6 +36,7 @@
 // CGH
 #include "CGH/Executor.h"
 #include "CGH/ExecutorCpp.h"
+#include "CGH/ExecutorCuda.h"
 #include "Common/Timer.h"
 //---------------------------------------------------------------------
 
@@ -120,7 +121,12 @@ char              *pFName = "Cfg/Default.json";
 
   if (rc == 0)
   {
-  CGH::Executor     *pE   = new CGH::ExecutorCpp();
+  CGH::Executor     *pE   = 0;
+
+    if (spJob->_renderer == "cpp")
+      pE = new CGH::ExecutorCpp();
+    if (spJob->_renderer == "cuda")
+      pE = new CGH::ExecutorCuda();
 
     if (pE)
     {
@@ -168,6 +174,8 @@ char              *pFName = "Cfg/Default.json";
 
       delete pE;
     }
+    else
+      std::cout << "Unknown renderer: " << spJob->_renderer << std::endl;
   }
 
   std::cout << "CGH: Exit\n";
