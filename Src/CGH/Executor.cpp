@@ -208,9 +208,9 @@ int rc = 0;
   _proofStp   = _spJob->_numPixels / _proofSize;
   _proofSize  = _spJob->_numPixels / _proofStp;
 
-  _proofImgDbl.create(_proofSize.y, _proofSize.x, CV_64FC1);
+  _proofImgDbl.create(_proofSize.y,_proofSize.x,CV_64FC1);
   _proofImgDbl.setTo(0);
-  _proofImg.create(_proofImgDbl.rows, _proofImgDbl.cols, CV_16UC1);
+  _proofImg.create(_proofImgDbl.rows,_proofImgDbl.cols,CV_16UC1);
   _proofImg.setTo(0);
 
   std::cout << "Proof Image [" << _proofImgDbl.cols << "," << _proofImgDbl.rows << "]: " << std::endl;
@@ -261,6 +261,7 @@ Executor::Executor(void) :  _spJob(),
 //---------------------------------------------------------------------
 Executor::~Executor()
 {
-  stop();
+  if (_run)
+    stop();
 }
 

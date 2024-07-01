@@ -54,13 +54,23 @@ namespace CGH
 
     // Members
     private:
-    protected:     
-    public:   
+    protected: 
+      void    *_pAccMem;
+      void    *_pdAccMem;
+      size_t  _nAccBytes;
+
+      void    *_pdPhaseLst;
+      size_t  _nPLstBytes;
+
+      void    *_pdPointCld;
+      size_t  _nPCldBytes;
+
+  public:
 
     // Methods
     private:
     protected:
-
+      int query(void);
 
     public:
       virtual void printStatus(void);

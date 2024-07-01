@@ -496,8 +496,6 @@ void ExecutorCpp::exec(void)
     if (_proofUpdate)
       updateProofImg();
 
-    //    cv::imshow("QStat",_qSImgFin);
-
     _printTimer.start();
   }
 }
@@ -611,8 +609,6 @@ ExecutorCpp::ExecutorCpp(void) : Executor(),
 ExecutorCpp::~ExecutorCpp()
 {
 double rTime = _runTimer.seconds();
-
-  stop();
 
   std::cout << "Run Time: " <<  rTime  << "s (" << rTime / (60.0 * 60.0) << "h)  " << std::endl;
 

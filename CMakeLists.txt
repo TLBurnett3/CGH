@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.26)
 
-project (CGH VERSION 0.0.2)
+project (CGH VERSION 0.0.2 LANGUAGES CXX CUDA)
 
 set (CMAKE_VERBOSE_MAKEFILE 1)
 
@@ -12,9 +12,9 @@ set (CGH_VERSION_MINOR      0)
 set (CGH_VERSION_PATCH      2)
 
 if (WIN32)
-set (3RDPARTY_BASE_DIR          /3rdPartyLibs)
+    set (3RDPARTY_BASE_DIR          /3rdPartyLibs)
 else (WIN32)
-set (3RDPARTY_BASE_DIR          /usr/local)
+    set (3RDPARTY_BASE_DIR          /usr/local)
 endif (WIN32)
 
 set (3RDPARTY_INC_DIR          ${3RDPARTY_BASE_DIR}/include)
@@ -89,6 +89,7 @@ message("             CGH_SRC_DIR:   " ${CGH_SRC_DIR})
 # Find Packages
 include(CMake/Config_OpenCV.txt)
 include(CMake/Config_PCL.txt)
+include(CMake/Config_Cuda.txt)
 
 set(FLANN_ROOT    ${3RDPARTY_INC_DIR})
 
