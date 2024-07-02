@@ -34,6 +34,8 @@
 
 // 3rdPartyLibs
 
+// CUDA
+#include "cuda_runtime_api.h"
 
 // CGH
 #include "Executor.h"
@@ -71,6 +73,19 @@ namespace CGH
     private:
     protected:
       int query(void);
+
+      inline double4 glmmake_double4(const glm::dvec4 &d)
+      {
+      double4 t;
+
+        t.x = d.x; t.y = d.y; t.z = d.z; t.w = d.w;
+
+        return t;
+      }
+
+      void determineMinMax  (double &dMin, double &dMax);
+      void createProofImage (double dMin, double dMax);
+
 
     public:
       virtual void printStatus(void);

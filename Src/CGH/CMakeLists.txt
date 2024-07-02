@@ -22,6 +22,7 @@ if (UNIX)
 endif()
 
 set(KERNELS
+  WaveFrontAccum.cuh
   WaveFrontAccum.cu
 )
 

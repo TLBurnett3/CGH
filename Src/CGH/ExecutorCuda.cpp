@@ -33,7 +33,6 @@
 
 // 3rdPartyLibs
 #include "opencv2/imgproc/imgproc.hpp"
-#include "cuda_runtime_api.h"
 
 // CGH
 #include "CGH/ExecutorCuda.h"
@@ -70,7 +69,7 @@ int rc        = -1;
 int dId       = 0;
 int nDevices  = 0;
 
-cudaGetDeviceCount(&nDevices);
+  cudaGetDeviceCount(&nDevices);
 
   if (nDevices && cudaGetDevice(&dId) == cudaSuccess)
   {
@@ -100,6 +99,52 @@ cudaGetDeviceCount(&nDevices);
 
 
 //---------------------------------------------------------------------
+// determineMinMax
+//---------------------------------------------------------------------
+void ExecutorCuda::determineMinMax(double &dMin,double &dMax)
+{
+double4 *pS     = (double4*)_pAccMem;
+double4*pSEnd  = pS + (_spJob->_numPixels.x * _spJob->_numPixels.y);
+
+  dMin =  FLT_MAX;
+  dMax = -FLT_MAX;
+
+  while (pS < pSEnd)
+  {
+    dMin = glm::min(dMin,pS->w);
+    dMax = glm::max(dMax,pS->w);
+
+    pS++;
+  }
+}
+
+
+//---------------------------------------------------------------------
+// createProofImage
+//---------------------------------------------------------------------
+void ExecutorCuda::createProofImage(double dMin,double dMax)
+{
+double4* pS     = (double4*)_pAccMem;
+uint16_t *pD    = (uint16_t *)_proofImg.data;
+
+  for (uint16_t i = 0; i < _proofImg.rows; i++)
+  {
+  double4* pR = pS + (i * (_spJob->_numPixels.x * _proofStp.y));
+
+    for (uint16_t j = 0; j < _proofImg.cols; j++)
+    {
+    uint16_t c = (uint16_t)map(pR->w, dMin, dMax, ((double)0), ((double)0xffff));
+
+      *pD = c;
+
+      pD++;
+      pR += _proofStp.x;
+    }
+  }
+}
+
+
+//---------------------------------------------------------------------
 // start
 //---------------------------------------------------------------------
 void ExecutorCuda::start(void)
@@ -114,16 +159,30 @@ void ExecutorCuda::start(void)
 //---------------------------------------------------------------------
 void ExecutorCuda::exec(void)
 {
-dim3  numThreads(1,256,1);
-dim3  numBlocks(1,_spJob->_numPixels.y / numThreads.y,1);
+dim3                  numThreads(1, 128, 1);
+dim3                  numBlocks(1, _spJob->_numPixels.y / numThreads.y, 1);
+WaveFrontAccumParams  wfap;
+void* pdWFAP;
 
-  //accWaveFront<<<numBlocks,numThreads>>>(_pdAccMem,_pdPhaseLst,_pdPointCld,
-  //                                       _spJob->_numPixels.x,(int)_pntCld.size(),
-  //                                       _spJob->_waveLengths.r, _spJob->_waveLengths.g, 
-  //                                       _spJob->_waveLengths.b, _spJob->_waveLengths.a);
+  if (cudaMalloc(&pdWFAP,sizeof(WaveFrontAccumParams)) == cudaSuccess)
+  {
+    wfap._nCol    = _spJob->_numPixels.x;
+    wfap._nPntCld = (int)_pntCld.size();
 
-  launch();
+    wfap._vS      = make_double3(_spJob->_pixelSize.x,_spJob->_pixelSize.y,1.0);
+    wfap._vT      = make_double3(_spJob->_numPixels.x >> 1, _spJob->_numPixels.y >> 1, 0.0);
 
+    wfap._waveLengths = glmmake_double4(_spJob->_waveLengths);
+
+    wfap._fov     = (double)_spJob->_fov;
+
+    cudaMemcpy(pdWFAP,&wfap,sizeof(WaveFrontAccumParams),cudaMemcpyHostToDevice);
+
+    launchWaveFrontAccum(numThreads,numBlocks,
+                       _pdAccMem,_pdPhaseLst,_pdPointCld,pdWFAP);
+
+    cudaFree(pdWFAP);
+  }
   _run = false;
 }
 
@@ -136,6 +195,33 @@ void ExecutorCuda::stop(void)
   Executor::stop();
 
   cudaMemcpy(_pAccMem,_pdAccMem,_nAccBytes,cudaMemcpyDeviceToHost);
+  cudaDeviceSynchronize();
+  determineMinMax(_proofMinDbl,_proofMaxDbl);
+
+  {
+  double rTime = _runTimer.seconds();
+  double avgTime = rTime / (double)_spJob->_numPixels.y;
+
+    std::cout << "Min Value: " << _proofMinDbl << "  Max Value: " << _proofMaxDbl << std::endl;
+    std::cout << "Run Time: " << rTime << "s (" << rTime / (60.0 * 60.0) << "h)  " << std::endl;
+    std::cout << "Avg. Row Time: " << avgTime << "s (" << avgTime / 60.0 << "m)  " << std::endl;
+  }
+
+  {
+    std::cout << "Creating Proof Image" << std::endl;
+    createProofImage(_proofMinDbl,_proofMaxDbl);
+  }
+
+  cv::imshow("ProofImg", _proofImg);
+
+  {
+  std::filesystem::path fPath = _spJob->_outPath;
+
+    fPath /= "ProofImg.png";
+
+    cv::imwrite(fPath.string(), _proofImg);
+  }
+
 }
 
 
@@ -153,7 +239,7 @@ int ExecutorCuda::init(const std::filesystem::path& filePath, Core::SpJob& spJob
   {
     _nAccBytes = sizeof(glm::dvec4) * _spJob->_numPixels.x * _spJob->_numPixels.y;
     _nPLstBytes = sizeof(glm::dvec4) * _phaseLst.size();
-    _nPCldBytes = sizeof(pcl::PointXYZRGBA) * _pntCld.size();
+    _nPCldBytes = sizeof(Point) * _pntCld.size();
 
     std::cout << "Requested CPU Memory: " << _nAccBytes << std::endl;
 
@@ -187,7 +273,27 @@ int ExecutorCuda::init(const std::filesystem::path& filePath, Core::SpJob& spJob
     std::cout << "Requested GPU Point Cloud Memory: " << _nPCldBytes << std::endl;
 
     if (cudaMalloc(&_pdPointCld, _nPCldBytes) == cudaSuccess)
-      cudaMemcpy(_pdPointCld, _pntCld.data(), _nPCldBytes, cudaMemcpyHostToDevice);
+    {
+    size_t            n       = _pntCld.size();
+    Point             *pMem   = new Point[n];
+    Point             *pD     = pMem;
+    Point             *pDEnd  = pD + n;
+    pcl::PointXYZRGBA *pCld   = &_pntCld[0];
+
+      
+      while (pD < pDEnd)
+      {
+        pD->_clr  = make_double4((double)pCld->r, (double)pCld->g, (double)pCld->b, (double)pCld->a);
+        pD->_pos  = make_double3((double)pCld->x, (double)pCld->y, (double)pCld->z);
+
+        pD++;
+        pCld++;
+      }
+
+      cudaMemcpy(_pdPointCld,pMem,_nPCldBytes,cudaMemcpyHostToDevice);
+
+      delete pMem;
+    }
     else
     {
       std::cout << "Could not allocate GPU memory, fatel error" << std::endl;
