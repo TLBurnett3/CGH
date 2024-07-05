@@ -109,6 +109,9 @@ inline __device__ void operator+=(double4 &a, double4 b) {
   a.x += b.x; a.y += b.y; a.z += b.z; a.w += b.w;
 }
 
+inline __device__ int getGlobalIdx_1D_2D() {
+  return (blockIdx.x * blockDim.x * blockDim.y) + (threadIdx.y * blockDim.x) + threadIdx.x;
+}
 
 __global__
 void accWaveFront(void *pdImg,void *pdPhaseLst,void *pdPointCld,void* pdWFAP)
@@ -159,7 +162,6 @@ double                hA      = (pdW->_fov / 2.0) * 0.01745329251994329576923690
   }
 }
 
-
 __global__
 void fillmem(void* pdImg, void* pdPhaseLst, void* pdPointCld, void* pdWFAP)
 {
@@ -175,11 +177,62 @@ double4*              pdDEnd  = pdD + pdW->_nCol;
   }
 }
 
+__global__
+void primeMinMax(void* pdImg,void* pdWFAP)
+{
+unsigned int tIdx  = getGlobalIdx_1D_2D();
+unsigned int i     = tIdx << 1;
+double4      *pBeg = reinterpret_cast<double4*>(pdImg);
+double4      *pS    = pBeg + i;
+double       dMin   = min((pS + 0)->w, (pS + 1)->w);
+double       dMax   = max((pS + 0)->w, (pS + 1)->w);
+
+  (pS + 0)->w = dMin;
+  (pS + 1)->w = dMax;
+}
+
+__global__
+void determineMinMax(void* pdImg, void* pdWFAP)
+{
+unsigned int          tIdx  = getGlobalIdx_1D_2D();
+unsigned int          nT    = (gridDim.x * gridDim.y) * (blockDim.x * blockDim.y);
+WaveFrontAccumParams* pdW   = reinterpret_cast<WaveFrontAccumParams*>(pdWFAP);
+double4*              pBeg  = reinterpret_cast<double4*>(pdImg);
+unsigned int          nP    = (pdW->_nRow * pdW->_nCol) >> 1;
+
+  while (tIdx < nT)
+  {
+  double4*              pS1   = pBeg + 0  + tIdx + 0;
+  double4*              pS2   = pBeg + nP + tIdx + 0;
+  double                dMin  = min((pS1 + 0)->w,(pS2 + 0)->w);
+  double                dMax  = max((pS1 + 1)->w,(pS2 + 1)->w);
+
+    (pS1 + 0)->w = dMin;
+    (pS1 + 1)->w = dMax;
+
+    nT >> 1;
+    nP >> 1;
+
+    __syncthreads();
+  }
+}
+
+
 __host__ 
 void launchWaveFrontAccum(dim3 &nT,dim3 &nB,
                           void* pdImg, void* pdPhaseLst, void* pdPointCld,void* pdWFAP)
 {
   accWaveFront<<<nB,nT>>>(pdImg,pdPhaseLst,pdPointCld,pdWFAP);
-  //fillmem<<<nB,nT>>>(pdImg, pdPhaseLst, pdPointCld, pdWFAP);
+}
 
+__host__
+void launchPrimeMinMax(dim3& nT,dim3& nB,void* pdImg,void* pdWFAP)
+{
+  primeMinMax << <nB, nT >> > (pdImg, pdWFAP);
+}
+
+__host__
+void launchDetermineMinMax(dim3& nT, dim3& nB, void* pdImg, void* pdWFAP)
+{
+  determineMinMax << <nB, nT >> > (pdImg, pdWFAP);
 }

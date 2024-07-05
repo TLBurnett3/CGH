@@ -124,8 +124,8 @@ double4*pSEnd  = pS + (_spJob->_numPixels.x * _spJob->_numPixels.y);
 //---------------------------------------------------------------------
 void ExecutorCuda::createProofImage(double dMin,double dMax)
 {
-double4* pS     = (double4*)_pAccMem;
-uint16_t *pD    = (uint16_t *)_proofImg.data;
+double4   *pS    = (double4  *)_pAccMem;
+uint16_t  *pD    = (uint16_t *)_proofImg.data;
 
   for (uint16_t i = 0; i < _proofImg.rows; i++)
   {
@@ -159,14 +159,13 @@ void ExecutorCuda::start(void)
 //---------------------------------------------------------------------
 void ExecutorCuda::exec(void)
 {
-dim3                  numThreads(1, 128, 1);
-dim3                  numBlocks(1, _spJob->_numPixels.y / numThreads.y, 1);
+void*                 pdWFAP = 0;
 WaveFrontAccumParams  wfap;
-void* pdWFAP;
 
   if (cudaMalloc(&pdWFAP,sizeof(WaveFrontAccumParams)) == cudaSuccess)
   {
-    wfap._nCol    = _spJob->_numPixels.x;
+    wfap._nRow = _spJob->_numPixels.y;
+    wfap._nCol = _spJob->_numPixels.x;
     wfap._nPntCld = (int)_pntCld.size();
 
     wfap._vS      = make_double3(_spJob->_pixelSize.x,_spJob->_pixelSize.y,1.0);
@@ -178,8 +177,47 @@ void* pdWFAP;
 
     cudaMemcpy(pdWFAP,&wfap,sizeof(WaveFrontAccumParams),cudaMemcpyHostToDevice);
 
-    launchWaveFrontAccum(numThreads,numBlocks,
-                       _pdAccMem,_pdPhaseLst,_pdPointCld,pdWFAP);
+    {
+    dim3 numThreads(1, 128, 1);
+    dim3 numBlocks(1, _spJob->_numPixels.y / numThreads.y, 1);
+    Common::Timer  rT;
+
+      launchWaveFrontAccum(numThreads,numBlocks,_pdAccMem,_pdPhaseLst,_pdPointCld,pdWFAP);
+      cudaDeviceSynchronize();
+
+      std::cout << "Wavefront Accumulation: " << rT.seconds() << "s" << std::endl;
+
+      cudaMemcpy(_pAccMem, _pdAccMem, _nAccBytes, cudaMemcpyDeviceToHost);
+      cudaDeviceSynchronize();    
+    }
+
+    {
+    dim3 numThreads(128, 64, 1);
+    dim3 numBlocks(_spJob->_numPixels.x / numThreads.x,_spJob->_numPixels.y / numThreads.y,1);
+    Common::Timer  rT;
+
+      launchPrimeMinMax(numThreads, numBlocks, _pdAccMem, pdWFAP);
+      cudaDeviceSynchronize();
+
+      std::cout << "Prime Min/Max: " << rT.seconds() << "s" << std::endl;
+    }
+
+    {
+    dim3 numThreads(64, 64, 1);
+    dim3 numBlocks(_spJob->_numPixels.x / numThreads.x, _spJob->_numPixels.y / numThreads.y, 1);
+    double4 mm[2];
+    Common::Timer  rT;
+
+      launchDetermineMinMax(numThreads, numBlocks, _pdAccMem, pdWFAP);
+      cudaDeviceSynchronize();
+
+      std::cout << "Determine Min/Max: " << rT.seconds() << "s" << std::endl;
+
+      cudaMemcpy(mm, _pdAccMem, sizeof(double4) * 2, cudaMemcpyDeviceToHost);
+      cudaDeviceSynchronize();
+
+      std::cout << "Cuda Min Value: " << mm[0].w << "  Cuda Max Value: " << mm[1].w << std::endl;
+    }
 
     cudaFree(pdWFAP);
   }
@@ -194,8 +232,6 @@ void ExecutorCuda::stop(void)
 {
   Executor::stop();
 
-  cudaMemcpy(_pAccMem,_pdAccMem,_nAccBytes,cudaMemcpyDeviceToHost);
-  cudaDeviceSynchronize();
   determineMinMax(_proofMinDbl,_proofMaxDbl);
 
   {

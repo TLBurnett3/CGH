@@ -43,6 +43,7 @@
 // Definitions
 typedef struct WaveFrontAccumParams_Def
 {
+  int _nRow;
   int _nCol;
   int _nPntCld;
 
@@ -69,8 +70,12 @@ typedef struct Point_DEF
 
 extern "C"
 {
-  void launchWaveFrontAccum(dim3& nT, dim3& nB, 
-                            void* pdImg, void* pdPhaseLst, void* pdPointCld,void* pdWFAP);
+  void launchWaveFrontAccum(dim3& nT, dim3& nB,
+                            void* pdImg, void* pdPhaseLst, void* pdPointCld, void* pdWFAP);
+  void launchPrimeMinMax(dim3& nT, dim3& nB,
+                          void* pdImg, void* pdWFAP);
+  void launchDetermineMinMax(dim3& nT, dim3& nB,
+                          void* pdImg, void* pdWFAP);
 };
 
 //---------------------------------------------------------------------
