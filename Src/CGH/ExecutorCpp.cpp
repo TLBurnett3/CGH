@@ -162,7 +162,7 @@ pcl::PointXYZRGBA *pEnd = pCld + _pntCld.size();
 glm::dvec4        k = glm::dvec4(2.0 * glm::pi<double>()) / _spJob->_waveLengths;
 float             hA = glm::radians(_spJob->_fov / 2.0);
 
-  while ((_run) && (hIdx.x < _spJob->_numPixels.x))
+  while (_run && (hIdx.x < _spJob->_numPixels.x))
   {
   glm::dvec3        vC(hIdx.x,hIdx.y,0);
   pcl::PointXYZRGBA *pS(pCld);
@@ -205,7 +205,7 @@ float             hA = glm::radians(_spJob->_fov / 2.0);
 //---------------------------------------------------------------------
 void ExecutorCpp::updateQStat(const uint32_t wId,const cv::Point &idx)
 {
-std::filesystem::path fPath = _spJob->_outPath;
+std::filesystem::path fPath       = _spJob->_outPath;
 
   fPath /= "QStat.png";
 
@@ -218,9 +218,6 @@ std::filesystem::path fPath = _spJob->_outPath;
     _qSImgFin.at<uint8_t>(idx) = 0xff;
 
     cv::imwrite(fPath.string(),_qSImgFin);
-
-    if ((idx.x == (_qSImgFin.cols - 1)) && (idx.y == (_qSImgFin.rows - 1)))
-      _run = false;
   }
 }
 
@@ -256,26 +253,30 @@ std::filesystem::path fPath = _spJob->_outPath;
 void ExecutorCpp::proofRow(const uint32_t wId,const int row)
 {
 int         y  = row / _proofStp.y;
-glm::dvec4 *pS = (glm::dvec4 *)_pMemLst[wId];
-double     dMin(FLT_MAX);
-double     dMax(-FLT_MAX);
 
-  for (int x = 0;x < _proofImgDbl.cols;x++)
+  if (y < _proofImgDbl.rows)
   {
-    _proofImgDbl.at<double>(y,x) = (*pS).w;
+  glm::dvec4 *pS = (glm::dvec4 *)_pMemLst[wId];
+  double     dMin(FLT_MAX);
+  double     dMax(-FLT_MAX);
 
-    dMin = glm::min(dMin,(*pS).w);
-    dMax = glm::max(dMax,(*pS).w);
+    for (int x = 0;x < _proofImgDbl.cols;x++)
+    {
+      _proofImgDbl.at<double>(y,x) = (*pS).w;
 
-    pS += _proofStp.x;
-  }
+      dMin = glm::min(dMin,(*pS).w);
+      dMax = glm::max(dMax,(*pS).w);
 
-  std::unique_lock<std::mutex> lock(_wAccess);
-  {
-    _proofMinDbl = glm::min(_proofMinDbl,dMin);
-    _proofMaxDbl = glm::max(_proofMaxDbl,dMax);
+      pS += _proofStp.x;
+    }
 
-    _proofUpdate = true;
+    std::unique_lock<std::mutex> lock(_wAccess);
+    {
+      _proofMinDbl = glm::min(_proofMinDbl,dMin);
+      _proofMaxDbl = glm::max(_proofMaxDbl,dMax);
+
+      _proofUpdate = true;
+    }
   }
 }
 
@@ -319,7 +320,7 @@ cv::Point  idx;
 static uint32_t workerCount = 0;
 void ExecutorCpp::worker(void)
 {
-uint32_t    wId = 0;
+uint32_t    wId       = 0;
 
   {
   std::unique_lock<std::mutex> lock(_tAccess);
@@ -335,14 +336,26 @@ uint32_t    wId = 0;
     {
     std::unique_lock<std::mutex> lock(_tAccess);
 
-      _workerCondition.wait(lock,[this]{ return ((_run == false) | (_dispatch == true)); });  
+      _procLst[wId] = -1;
+
+      _workerCondition.wait(lock,[this]{ return ((_run == false) | (_dispatch == true)); });
 
       if (_run && _dispatch)
-      {        
+      {
         row = findWaveFrontRow(&idx);
 
         if (row == -1)
-          _dispatch = false;
+        {
+          workerCount--;
+
+          std::cout << "Worker Thread Exit: " << wId << std::endl;
+
+          if (workerCount == 0)
+          {
+            std::cout << "Job Complete. " << std::endl;
+            _run = false;
+          }
+        }
       }
     }
 
@@ -353,19 +366,16 @@ uint32_t    wId = 0;
 
       processWaveFrontRow(wId,row);
 
-      if (_run)
-      { 
-        if ((row % _proofStp.y) == 0)
-          proofRow(wId,row);
+      if ((row % _proofStp.y) == 0)
+        proofRow(wId,row);
 
-        if (_spJob->_isWaveField)
-          writeWaveFrontRow(wId,row);
+      if (_spJob->_isWaveField)
+        writeWaveFrontRow(wId,row);
 
-        updateQStat(wId,idx);
-      }
+      updateQStat(wId,idx);
     }
     else
-      _procLst[wId] = -1;
+      break;
   }
 }
 
@@ -573,6 +583,16 @@ void ExecutorCpp::stop(void)
   Executor::stop();
 
   _workerCondition.notify_all();
+
+  // wait for all threads to finish and join
+  {
+  size_t n = _workers.size();
+
+    for (size_t i = 0; i < n; i++)
+      _workers[i].join();
+  }
+
+  updateProofImg();
 }
 
 
@@ -611,14 +631,6 @@ ExecutorCpp::~ExecutorCpp()
 double rTime = _runTimer.seconds();
 
   std::cout << "Run Time: " <<  rTime  << "s (" << rTime / (60.0 * 60.0) << "h)  " << std::endl;
-
-  // wait for all threads to finish and join
-  {
-  size_t n = _workers.size();
-
-    for (size_t i = 0;i < n;i++)
-      _workers[i].join();
-  }
 
   {
   size_t n = _pMemLst.size();

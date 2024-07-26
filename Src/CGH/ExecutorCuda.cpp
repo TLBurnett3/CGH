@@ -178,8 +178,8 @@ WaveFrontAccumParams  wfap;
     cudaMemcpy(pdWFAP,&wfap,sizeof(WaveFrontAccumParams),cudaMemcpyHostToDevice);
 
     {
-    dim3 numThreads(1, 128, 1);
-    dim3 numBlocks(1, _spJob->_numPixels.y / numThreads.y, 1);
+    dim3 numThreads(128, 1, 1);
+    dim3 numBlocks(_spJob->_numPixels.x / numThreads.x, 1, 1);
     Common::Timer  rT;
 
       launchWaveFrontAccum(numThreads,numBlocks,_pdAccMem,_pdPhaseLst,_pdPointCld,pdWFAP);
@@ -191,32 +191,40 @@ WaveFrontAccumParams  wfap;
       cudaDeviceSynchronize();    
     }
 
+
+    if (1)
     {
-    dim3 numThreads(128, 64, 1);
-    dim3 numBlocks(_spJob->_numPixels.x / numThreads.x,_spJob->_numPixels.y / numThreads.y,1);
+    double4        mm[2];
     Common::Timer  rT;
 
-      launchPrimeMinMax(numThreads, numBlocks, _pdAccMem, pdWFAP);
-      cudaDeviceSynchronize();
+      // Gather min/max by row
+      {
+      dim3 numThreads(128, 1, 1);
+      dim3 numBlocks(_spJob->_numPixels.x / numThreads.x, 1, 1);
 
-      std::cout << "Prime Min/Max: " << rT.seconds() << "s" << std::endl;
-    }
+        launchDetermineRowMinMax(numThreads, numBlocks, _pdAccMem, pdWFAP);
+        cudaDeviceSynchronize();
+      }
 
-    {
-    dim3 numThreads(64, 64, 1);
-    dim3 numBlocks(_spJob->_numPixels.x / numThreads.x, _spJob->_numPixels.y / numThreads.y, 1);
-    double4 mm[2];
-    Common::Timer  rT;
+      // Gather all the row min/max, use just 1 thread
+      {
+      dim3 numThreads(1, 1, 1);
+      dim3 numBlocks(1, 1, 1);
 
-      launchDetermineMinMax(numThreads, numBlocks, _pdAccMem, pdWFAP);
-      cudaDeviceSynchronize();
+        launchDetermineFinalMinMax(numThreads, numBlocks, _pdAccMem, pdWFAP);
+        cudaDeviceSynchronize();
+      }
 
-      std::cout << "Determine Min/Max: " << rT.seconds() << "s" << std::endl;
+      std::cout << "Min/Max Determination: " << rT.seconds() << "s" << std::endl;
 
       cudaMemcpy(mm, _pdAccMem, sizeof(double4) * 2, cudaMemcpyDeviceToHost);
       cudaDeviceSynchronize();
 
-      std::cout << "Cuda Min Value: " << mm[0].w << "  Cuda Max Value: " << mm[1].w << std::endl;
+      std::cout << "Cuda Min: " << mm[0].x << ", " << mm[0].y << ", " << mm[0].z << ", " << mm[0].w << std::endl;
+      std::cout << "Cuda Max: " << mm[1].x << ", " << mm[1].y << ", " << mm[1].z << ", " << mm[1].w << std::endl;
+
+      _proofMinDbl = mm[0].w;
+      _proofMaxDbl = mm[1].w;
     }
 
     cudaFree(pdWFAP);
@@ -231,8 +239,6 @@ WaveFrontAccumParams  wfap;
 void ExecutorCuda::stop(void)
 {
   Executor::stop();
-
-  determineMinMax(_proofMinDbl,_proofMaxDbl);
 
   {
   double rTime = _runTimer.seconds();

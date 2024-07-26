@@ -18,35 +18,19 @@ During execution, CGH generates a ProofImage.png and the QStat.png.  The QStat.p
 When the WaveField parameter is on, the pixel wavefront is recorded by row into the "OutPath/WaveField" directory.  See below.
 
 ### JSon File Description
+| key           | Description                                                                       | Note                                                    |
+|:--------------|:----------------------------------------------------------------------------------|:--------------------------------------------------------|
+| JobName       | Name of the Job                                                                   |                                                         |
+| Renderer      | C++ or Cuda CGH renderer                                                          | "Cpp" or "Cuda"                                         |
+| OutPath       | Output directory                                                                  |                                                         |
+| Dim           | Dimensions of the hologram image in millimeters defined on an X,Y plane           |                                                         |
+| PixelSize     | Size of a hologram pixel in millimeters                                           |                                                         |
+| FoV           | Field of view of a holographic pixel                                              |                                                         |
+| NumThread     | Number of threads to use for calculating the intensity image                      |                                                         |
+| PointCloud    | The pointcloud .pcd file                                                          |                                                         |
+| WaveLengths   | The RGB wavelengths for wavefield calculation                                     |                                                         |
+| WaveField     | Generate the RGBW wavefield for each holographic pixel row                        |                                                         |
+| PCTransform   | A transform matrix applied to the point cloud                                     |                                                         |
 
-##### JobName
-Name of the Job.
-
-##### OutPath
-Output directory.
-
-#### Dim
-Dimensions of the hologram image in millimeters defined on an X,Y plane.
-
-#### PixelSize
-Size of a hologram pixel in millimeters.
-
-#### FoV
-Field of view of a holographic pixel.
-
-#### NumThreads
-Number of threads to use for calculating the intensity image.
-
-#### PointCloud
-The pointcloud .pcd file.
-
-#### WaveLengths
-The RGB wavelengths for wavefield calculation.
-
-#### WaveField
-Generate the RGBW wavefield for each holographic pixel row.
-
-#### PCTransform
-A transform matrix applied to the point cloud.
 
 
